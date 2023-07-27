@@ -26,3 +26,14 @@ func (w *WalletHandler) Enable(c *fiber.Ctx) error {
 	c.SendStatus(201)
 	return c.JSON(models.Response(walletData, "success"))
 }
+
+func (w *WalletHandler) GetWallet(c *fiber.Ctx) error {
+	token := strings.Split(c.Get("Authorization"), " ")[1]
+	walletData, err := w.walletController.GetWallet(token)
+	if err != nil {
+		c.SendStatus(404)
+		return c.JSON(models.ErrResponse(err))
+	}
+	c.SendStatus(200)
+	return c.JSON(models.Response(walletData, "success"))
+}

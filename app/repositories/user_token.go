@@ -49,7 +49,6 @@ func (u *userTokenRepository) IsTokenValid(token string) (string, error) {
 	sqlStmt := fmt.Sprintf("SELECT user_id FROM user_token WHERE %s = '%s'", "token", token)
 	err := u.db.QueryRow(context.Background(), sqlStmt).Scan(&userID)
 	if err != nil {
-		fmt.Println("hehe")
 		return "", errors.New("Invalid token.")
 	}
 

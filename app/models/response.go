@@ -42,12 +42,15 @@ func ErrResponse(err error) map[string]interface{} {
 }
 
 func ParseWallet(wallet Wallet) map[string]interface{} {
-	result := map[string]interface{}{
+	walletData := map[string]interface{}{
 		"id":         wallet.ID,
 		"owned_by":   wallet.UserID,
 		"status":     wallet.Status,
 		"enabled_at": wallet.EnabledAt.Format("2006-01-02T15:04:05-07:00"),
 		"balance":    wallet.Balance,
 	}
+
+	result := make(map[string]interface{})
+	result["wallet"] = walletData
 	return result
 }

@@ -38,4 +38,5 @@ func SetupRoutes(app *fiber.App, db database.DB) {
 	v1 := api.Group("/v1")
 	v1.Post("/init", userTokenHandler.Init)
 	v1.Post("/wallet", middlewares.AuthMiddleware, walletHandler.Enable)
+	v1.Get("/wallet", middlewares.AuthMiddleware, walletHandler.GetWallet)
 }
