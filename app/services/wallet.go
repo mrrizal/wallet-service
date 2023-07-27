@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"mrrizal/wallet-service/app/models"
@@ -10,6 +10,8 @@ import (
 
 type WalletService interface {
 	Enable(userID, token string) (map[string]interface{}, error)
+	ReEnable(wallet *models.Wallet) (map[string]interface{}, error)
+	GetWallet(userID string) models.Wallet
 }
 
 type walletService struct {
@@ -34,4 +36,16 @@ func (w *walletService) Enable(userID, token string) (map[string]interface{}, er
 	}
 
 	return models.ParseWallet(walletData), nil
+}
+
+func (w *walletService) ReEnable(wallet *models.Wallet) (map[string]interface{}, error) {
+	wallet.Status = models.WalletStatusEnabled
+	if err := w.walletRepository.ReEnable(wallet.ID, wallet.Status); err != nil {
+		return make(map[string]interface{}), err
+	}
+	return models.ParseWallet(*wallet), nil
+}
+
+func (w *walletService) GetWallet(userID string) models.Wallet {
+	return w.walletRepository.GetWallet(userID)
 }

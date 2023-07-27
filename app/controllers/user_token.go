@@ -1,18 +1,18 @@
 package controllers
 
 import (
-	"mrrizal/wallet-service/app/service"
+	"mrrizal/wallet-service/app/services"
 	"mrrizal/wallet-service/app/validators"
 )
 
 type UserTokenController struct {
 	userTokenValidator validators.UserTokenValidator
-	userTokenService   service.UserTokenService
+	userTokenService   services.UserTokenService
 }
 
 func NewUserTokenController(
 	userTokenValidator validators.UserTokenValidator,
-	userTokenService service.UserTokenService) UserTokenController {
+	userTokenService services.UserTokenService) UserTokenController {
 	return UserTokenController{
 		userTokenValidator: userTokenValidator,
 		userTokenService:   userTokenService,

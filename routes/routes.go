@@ -6,7 +6,7 @@ import (
 	"mrrizal/wallet-service/app/handler"
 	"mrrizal/wallet-service/app/middlewares"
 	"mrrizal/wallet-service/app/repositories"
-	"mrrizal/wallet-service/app/service"
+	"mrrizal/wallet-service/app/services"
 	"mrrizal/wallet-service/app/validators"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,15 +18,16 @@ func SetupRoutes(app *fiber.App, db database.DB) {
 	walletRepository := repositories.NewWalletRepository(db)
 
 	// service
-	userTokenService := service.NewUserTokenService(&userTokenRepository)
-	walletService := service.NewWalletService(&walletRepository)
+	userTokenService := services.NewUserTokenService(&userTokenRepository)
+	walletService := services.NewWalletService(&walletRepository)
 
 	// validator
 	userTokenValidator := validators.NewUserTokenValidator(&userTokenService)
+	walletValidator := validators.NewWalletValidator(&walletService)
 
 	// controller
 	userTokenController := controllers.NewUserTokenController(&userTokenValidator, &userTokenService)
-	walletController := controllers.NewWalletController(&userTokenValidator, &walletService)
+	walletController := controllers.NewWalletController(&userTokenValidator, &walletValidator, &walletService)
 
 	// handler
 	userTokenHandler := handler.NewUserTokenHandler(userTokenController)

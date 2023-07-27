@@ -3,7 +3,7 @@ package validators
 import (
 	"errors"
 	"mrrizal/wallet-service/app/models"
-	"mrrizal/wallet-service/app/service"
+	"mrrizal/wallet-service/app/services"
 	"regexp"
 )
 
@@ -13,10 +13,10 @@ type UserTokenValidator interface {
 }
 
 type userTokenValidator struct {
-	userTokenService service.UserTokenService
+	userTokenService services.UserTokenService
 }
 
-func NewUserTokenValidator(userTokenService service.UserTokenService) userTokenValidator {
+func NewUserTokenValidator(userTokenService services.UserTokenService) userTokenValidator {
 	return userTokenValidator{userTokenService: userTokenService}
 }
 

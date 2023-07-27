@@ -38,7 +38,7 @@ func ErrResponse(err error) map[string]interface{} {
 		}
 		errMsg = temp
 	}
-	return Response(errMsg, "failed")
+	return Response(errMsg, "fail")
 }
 
 func ParseWallet(wallet Wallet) map[string]interface{} {
