@@ -30,17 +30,16 @@ func (w *WalletController) Enable(token string) (map[string]interface{}, error) 
 		return map[string]interface{}{}, err
 	}
 
-	walletDataObj := w.walletValidator.IsHaveWallet(userID)
+	walletDataObj, haveWallet := w.walletValidator.IsHaveWallet(userID)
 	if err != nil {
 		return make(map[string]interface{}), err
 	}
 
-	if walletDataObj.ID != "" {
-		if walletDataObj.Status == models.WalletStatusDisabled {
-			return w.walletService.ReEnable(&walletDataObj)
-		} else if walletDataObj.Status == models.WalletStatusEnabled {
+	if haveWallet {
+		if w.walletValidator.IsWalletEnabled(walletDataObj) {
 			return make(map[string]interface{}), errors.New("Already enabled")
 		}
+		return w.walletService.ReEnable(&walletDataObj)
 	}
 
 	walletData, err := w.walletService.Enable(userID, token)
@@ -57,8 +56,9 @@ func (w *WalletController) GetWallet(token string) (map[string]interface{}, erro
 		return map[string]interface{}{}, err
 	}
 
-	wallet := w.walletService.GetWallet(userID)
-	if wallet.ID == "" || wallet.Status == models.WalletStatusDisabled {
+	wallet, haveWallet := w.walletValidator.IsHaveWallet(userID)
+
+	if !w.walletValidator.IsWalletEnabled(wallet) || !haveWallet {
 		return make(map[string]interface{}), errors.New("Wallet Disabled")
 	}
 

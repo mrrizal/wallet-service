@@ -6,7 +6,8 @@ import (
 )
 
 type WalletValidator interface {
-	IsHaveWallet(userID string) models.Wallet
+	IsHaveWallet(userID string) (models.Wallet, bool)
+	IsWalletEnabled(wallet models.Wallet) bool
 }
 
 type walletValidator struct {
@@ -17,6 +18,15 @@ func NewWalletValidator(walletService services.WalletService) walletValidator {
 	return walletValidator{walletService: walletService}
 }
 
-func (w *walletValidator) IsHaveWallet(userID string) models.Wallet {
-	return w.walletService.GetWallet(userID)
+func (w *walletValidator) IsHaveWallet(userID string) (models.Wallet, bool) {
+	wallet := w.walletService.GetWallet(userID)
+	return wallet, wallet.ID != ""
+}
+
+func (w *walletValidator) IsWalletEnabled(wallet models.Wallet) bool {
+	if wallet.Status == models.WalletStatusDisabled {
+		return false
+	}
+
+	return true
 }
