@@ -47,6 +47,7 @@ func SetupRoutes(app *fiber.App, db database.DB) {
 	v1.Post("/init", userTokenHandler.Init)
 	v1.Post("/wallet", middlewares.AuthMiddleware, walletHandler.Enable)
 	v1.Get("/wallet", middlewares.AuthMiddleware, walletHandler.GetWallet)
+	v1.Patch("/wallet", middlewares.AuthMiddleware, walletHandler.Disable)
 	v1.Post("/wallet/deposit", middlewares.AuthMiddleware, transactionHandler.Deposit)
 	v1.Post("/wallet/withdraw", middlewares.AuthMiddleware, transactionHandler.Withdraw)
 	v1.Get("/wallet/transactions", middlewares.AuthMiddleware, transactionHandler.FetchAll)

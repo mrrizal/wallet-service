@@ -10,7 +10,7 @@ import (
 
 type WalletService interface {
 	Enable(userID, token string) (map[string]interface{}, error)
-	ReEnable(wallet *models.Wallet) (map[string]interface{}, error)
+	Update(wallet *models.Wallet, status models.WalletStatus) (map[string]interface{}, error)
 	GetWallet(userID string) (map[string]interface{}, error)
 }
 
@@ -38,9 +38,9 @@ func (w *walletService) Enable(userID, token string) (map[string]interface{}, er
 	return models.ParseWallet(walletData), nil
 }
 
-func (w *walletService) ReEnable(wallet *models.Wallet) (map[string]interface{}, error) {
-	wallet.Status = models.WalletStatusEnabled
-	if err := w.walletRepository.ReEnable(wallet.ID, wallet.Status); err != nil {
+func (w *walletService) Update(wallet *models.Wallet, status models.WalletStatus) (map[string]interface{}, error) {
+	wallet.Status = status
+	if err := w.walletRepository.Update(wallet); err != nil {
 		return make(map[string]interface{}), err
 	}
 	return models.ParseWallet(*wallet), nil

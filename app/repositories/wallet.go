@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"mrrizal/wallet-service/app/database"
 	"mrrizal/wallet-service/app/models"
+	"time"
 )
 
 type WalletRepository interface {
 	Enable(wallet models.Wallet) error
-	ReEnable(walletID string, walletStatus models.WalletStatus) error
+	Update(wallet *models.Wallet) error
 	GetWallet(userID string) models.Wallet
 }
 
@@ -31,10 +32,18 @@ func (w *walletRepository) Enable(wallet models.Wallet) error {
 	return err
 }
 
-func (w *walletRepository) ReEnable(walletID string, walletStatus models.WalletStatus) error {
-	sqlStmt := `UPDATE wallet set status = $1 WHERE id = $2 RETURNING status`
-	row := w.db.QueryRow(context.Background(), sqlStmt, walletStatus, walletID)
-	err := row.Scan(&walletStatus)
+func (w *walletRepository) Update(wallet *models.Wallet) error {
+	var row database.Row
+	wallet.EnabledAt = time.Now()
+	if wallet.Status == models.WalletStatusEnabled {
+		sqlStmt := `UPDATE wallet set status = $1, enabled_at = $2 WHERE id = $3 RETURNING status`
+		row = w.db.QueryRow(context.Background(), sqlStmt, wallet.Status, wallet.EnabledAt, wallet.ID)
+	} else {
+		sqlStmt := `UPDATE wallet set status = $1 WHERE id = $2 RETURNING status`
+		row = w.db.QueryRow(context.Background(), sqlStmt, wallet.Status, wallet.ID)
+	}
+
+	err := row.Scan(&wallet.Status)
 	return err
 }
 
