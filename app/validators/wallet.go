@@ -1,6 +1,7 @@
 package validators
 
 import (
+	"log"
 	"mrrizal/wallet-service/app/models"
 	"mrrizal/wallet-service/app/services"
 )
@@ -19,7 +20,11 @@ func NewWalletValidator(walletService services.WalletService) walletValidator {
 }
 
 func (w *walletValidator) IsHaveWallet(userID string) (models.Wallet, bool) {
-	wallet := w.walletService.GetWallet(userID)
+	walletData, err := w.walletService.GetWallet(userID)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	wallet := models.MapTopWallet(walletData)
 	return wallet, wallet.ID != ""
 }
 

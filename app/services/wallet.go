@@ -11,7 +11,7 @@ import (
 type WalletService interface {
 	Enable(userID, token string) (map[string]interface{}, error)
 	ReEnable(wallet *models.Wallet) (map[string]interface{}, error)
-	GetWallet(userID string) models.Wallet
+	GetWallet(userID string) (map[string]interface{}, error)
 }
 
 type walletService struct {
@@ -46,6 +46,7 @@ func (w *walletService) ReEnable(wallet *models.Wallet) (map[string]interface{},
 	return models.ParseWallet(*wallet), nil
 }
 
-func (w *walletService) GetWallet(userID string) models.Wallet {
-	return w.walletRepository.GetWallet(userID)
+func (w *walletService) GetWallet(userID string) (map[string]interface{}, error) {
+	wallet := w.walletRepository.GetWallet(userID)
+	return models.ParseWallet(wallet), nil
 }

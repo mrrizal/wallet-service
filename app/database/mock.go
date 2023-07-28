@@ -1,7 +1,11 @@
 // this for testing purpose
 package database
 
-import "context"
+import (
+	"context"
+
+	"github.com/jackc/pgconn"
+)
 
 type mockRow struct {
 	MockScan func(dest ...any) error
@@ -50,9 +54,14 @@ func NewMockRows() mockRows {
 }
 
 type mockTransaction struct {
+	MockRow        mockRow
+	MockRows       mockRows
 	MockRollback   func(ctx context.Context) error
 	MockBulkInsert func(ctx context.Context, tableName string, columns []string, rows [][]any) (int, error)
 	MockCommit     func(ctx context.Context) error
+	MockQueryRow   func(ctx context.Context, sql string, args ...any) Row
+	MockQuery      func(ctx context.Context, sql string, args ...any) (Rows, error)
+	MockExec       func(ctx context.Context, sql string, arguments ...any) (commandTag pgconn.CommandTag, err error)
 }
 
 func (this *mockTransaction) Rollback(ctx context.Context) error {
@@ -68,8 +77,24 @@ func (this *mockTransaction) Commit(ctx context.Context) error {
 	return this.MockCommit(ctx)
 }
 
+func (this *mockTransaction) QueryRow(ctx context.Context, sql string, args ...any) Row {
+	return this.MockQueryRow(ctx, sql, args...)
+}
+
+func (this *mockTransaction) Query(ctx context.Context, sql string, args ...any) (Rows, error) {
+	return this.Query(ctx, sql, args...)
+}
+
+func (this *mockTransaction) Exec(ctx context.Context, sql string, arguments ...any) (commandTag pgconn.CommandTag, err error) {
+	return this.Exec(ctx, sql, arguments...)
+}
+
 func NewMockTransaction() mockTransaction {
+	mockRow := NewMockRow()
+	mockRows := NewMockRows()
 	return mockTransaction{
+		MockRow:  mockRow,
+		MockRows: mockRows,
 		MockRollback: func(ctx context.Context) error {
 			return nil
 		},
@@ -78,6 +103,15 @@ func NewMockTransaction() mockTransaction {
 		},
 		MockCommit: func(ctx context.Context) error {
 			return nil
+		},
+		MockQuery: func(ctx context.Context, sql string, args ...any) (Rows, error) {
+			return &mockRows, nil
+		},
+		MockQueryRow: func(ctx context.Context, sql string, args ...any) Row {
+			return &mockRow
+		},
+		MockExec: func(ctx context.Context, sql string, arguments ...any) (commandTag pgconn.CommandTag, err error) {
+			return pgconn.CommandTag{}, nil
 		},
 	}
 }

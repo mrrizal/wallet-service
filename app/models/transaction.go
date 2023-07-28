@@ -12,11 +12,11 @@ const (
 type TransactionType string
 
 const (
-	TransactionTypeWithdraw TransactionType = "withdraw"
+	TransactionTypeWithdraw TransactionType = "withdrawal"
 	TransactionTypeDeposit  TransactionType = "deposit"
 )
 
-type Transactions struct {
+type Transaction struct {
 	ID           string            `json:"id"`
 	WalletID     string            `json:"wallet_id"`
 	Status       TransactionStatus `json:"status"`
@@ -24,4 +24,10 @@ type Transactions struct {
 	Type         TransactionType   `json:"type"`
 	Amount       float64           `json:"amount"`
 	ReferenceID  string            `json:"reference_id"`
+}
+
+type TransactionRequest struct {
+	Type        TransactionType
+	Amount      float64
+	ReferenceID string
 }

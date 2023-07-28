@@ -16,10 +16,12 @@ func SetupRoutes(app *fiber.App, db database.DB) {
 	// repository
 	userTokenRepository := repositories.NewUserTokenRepository(db)
 	walletRepository := repositories.NewWalletRepository(db)
+	transactionRepository := repositories.NewTransactionRepository(db)
 
 	// service
 	userTokenService := services.NewUserTokenService(&userTokenRepository)
 	walletService := services.NewWalletService(&walletRepository)
+	transactionService := services.NewTransactionService(&transactionRepository)
 
 	// validator
 	userTokenValidator := validators.NewUserTokenValidator(&userTokenService)
@@ -28,10 +30,16 @@ func SetupRoutes(app *fiber.App, db database.DB) {
 	// controller
 	userTokenController := controllers.NewUserTokenController(&userTokenValidator, &userTokenService)
 	walletController := controllers.NewWalletController(&userTokenValidator, &walletValidator, &walletService)
+	transactionControler := controllers.NewTransactionController(
+		&userTokenValidator,
+		&walletValidator,
+		&transactionService,
+	)
 
 	// handler
 	userTokenHandler := handler.NewUserTokenHandler(userTokenController)
 	walletHandler := handler.NewWalletHandler(walletController)
+	transactionHandler := handler.NewTransactionHandler(transactionControler)
 
 	// routes
 	api := app.Group("/api")
@@ -39,4 +47,6 @@ func SetupRoutes(app *fiber.App, db database.DB) {
 	v1.Post("/init", userTokenHandler.Init)
 	v1.Post("/wallet", middlewares.AuthMiddleware, walletHandler.Enable)
 	v1.Get("/wallet", middlewares.AuthMiddleware, walletHandler.GetWallet)
+	v1.Post("/wallet/deposit", middlewares.AuthMiddleware, transactionHandler.Deposit)
+	v1.Post("/wallet/withdraw", middlewares.AuthMiddleware, transactionHandler.Withdraw)
 }

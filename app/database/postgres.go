@@ -6,8 +6,9 @@ import (
 	"log"
 	"mrrizal/wallet-service/app/configs"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type transaction struct {
@@ -30,6 +31,18 @@ func (this *transaction) BulkInsert(ctx context.Context, tableName string, colum
 
 func (this *transaction) Commit(ctx context.Context) error {
 	return this.tx.Commit(ctx)
+}
+
+func (this *transaction) Query(ctx context.Context, sql string, args ...any) (Rows, error) {
+	return this.tx.Query(ctx, sql, args...)
+}
+
+func (this *transaction) QueryRow(ctx context.Context, sql string, args ...any) Row {
+	return this.tx.QueryRow(ctx, sql, args)
+}
+
+func (this *transaction) Exec(ctx context.Context, sql string, arguments ...any) (commandTag pgconn.CommandTag, err error) {
+	return this.tx.Exec(ctx, sql, arguments...)
 }
 
 type postgresDB struct {
@@ -55,7 +68,7 @@ func (this *postgresDB) Query(ctx context.Context, sql string, args ...any) (Row
 }
 
 func NewDB(conf configs.Config) (DB, error) {
-	pool, err := pgxpool.New(context.Background(), conf.DBURI)
+	pool, err := pgxpool.Connect(context.Background(), conf.DBURI)
 	db := &postgresDB{pool: pool}
 	if err != nil {
 		log.Default().Fatal("cant connect to the database")

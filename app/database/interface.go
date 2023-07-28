@@ -5,7 +5,11 @@
 
 package database
 
-import "context"
+import (
+	"context"
+
+	"github.com/jackc/pgconn"
+)
 
 type Row interface {
 	Scan(dest ...any) error
@@ -22,6 +26,9 @@ type Transaction interface {
 	Rollback(context.Context) error
 	BulkInsert(ctx context.Context, tableName string, columns []string, rows [][]any) (int, error)
 	Commit(ctx context.Context) error
+	Query(ctx context.Context, sql string, args ...any) (Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) Row
+	Exec(ctx context.Context, sql string, arguments ...any) (commandTag pgconn.CommandTag, err error)
 }
 
 type DB interface {
