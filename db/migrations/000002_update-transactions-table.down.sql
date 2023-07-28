@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" DROP CONSTRAINT "uq_type_reference_id"

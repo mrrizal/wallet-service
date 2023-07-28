@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ADD CONSTRAINT "uq_type_reference_id" UNIQUE ("type", "reference_id");
