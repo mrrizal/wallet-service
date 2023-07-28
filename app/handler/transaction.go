@@ -62,3 +62,15 @@ func (t *TransactionHandler) Withdraw(c *fiber.Ctx) error {
 	c.SendStatus(201)
 	return c.JSON(models.Response(transactionData, "success"))
 }
+
+func (t *TransactionHandler) FetchAll(c *fiber.Ctx) error {
+	token := strings.Split(c.Get("Authorization"), " ")[1]
+	transactionData, err := t.transactionController.FetchAll(token)
+	if err != nil {
+		c.SendStatus(400)
+		return c.JSON(models.ErrResponse(err))
+	}
+
+	c.SendStatus(200)
+	return c.JSON(models.Response(transactionData, "success"))
+}

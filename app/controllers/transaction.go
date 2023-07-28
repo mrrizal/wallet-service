@@ -23,22 +23,30 @@ func NewTransactionController(userTokenValidator validators.UserTokenValidator,
 	}
 }
 
-func (t *TransactionController) Deposit(token string,
-	transactionReq models.TransactionRequest) (map[string]interface{}, error) {
+func (t *TransactionController) validate(token string) (models.Wallet, string, error) {
 	userID, err := t.userTokenValidator.ValidateToken(token)
 	if err != nil {
-		return map[string]interface{}{}, err
+		return models.Wallet{}, "", err
 	}
 
 	walletDataObj, haveWallet := t.walletValidator.IsHaveWallet(userID)
 	walletEnabled := t.walletValidator.IsWalletEnabled(walletDataObj)
 
 	if !haveWallet {
-		return make(map[string]interface{}), errors.New("Wallet Disabled")
+		return models.Wallet{}, "", errors.New("Wallet Disabled")
 	}
 
 	if !walletEnabled {
-		return make(map[string]interface{}), errors.New("Wallet Disabled")
+		return models.Wallet{}, "", errors.New("Wallet Disabled")
+	}
+	return walletDataObj, userID, nil
+}
+
+func (t *TransactionController) Deposit(token string,
+	transactionReq models.TransactionRequest) (map[string]interface{}, error) {
+	walletDataObj, userID, err := t.validate(token)
+	if err != nil {
+		return make(map[string]interface{}), err
 	}
 
 	transactionData, err := t.transactionService.Deposit(walletDataObj.ID, userID, transactionReq)
@@ -50,20 +58,9 @@ func (t *TransactionController) Deposit(token string,
 
 func (t *TransactionController) Withdraw(token string,
 	transactionReq models.TransactionRequest) (map[string]interface{}, error) {
-	userID, err := t.userTokenValidator.ValidateToken(token)
+	walletDataObj, userID, err := t.validate(token)
 	if err != nil {
-		return map[string]interface{}{}, err
-	}
-
-	walletDataObj, haveWallet := t.walletValidator.IsHaveWallet(userID)
-	walletEnabled := t.walletValidator.IsWalletEnabled(walletDataObj)
-
-	if !haveWallet {
-		return make(map[string]interface{}), errors.New("Wallet Disabled")
-	}
-
-	if !walletEnabled {
-		return make(map[string]interface{}), errors.New("Wallet Disabled")
+		return make(map[string]interface{}), err
 	}
 
 	transactionData, err := t.transactionService.Withdraw(walletDataObj.ID, userID, transactionReq)
@@ -71,4 +68,18 @@ func (t *TransactionController) Withdraw(token string,
 		return make(map[string]interface{}), err
 	}
 	return transactionData, nil
+}
+
+func (t *TransactionController) FetchAll(token string) (map[string]interface{}, error) {
+	walletDataObj, _, err := t.validate(token)
+	if err != nil {
+		return make(map[string]interface{}), err
+	}
+
+	transactionsData, err := t.transactionService.FetchAll(walletDataObj.ID)
+	if err != nil {
+		return make(map[string]interface{}), err
+	}
+	return transactionsData, nil
+
 }

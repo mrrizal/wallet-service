@@ -10,6 +10,7 @@ import (
 type TransactionRepository interface {
 	Deposit(transaction *models.Transaction) error
 	Withdraw(transaction *models.Transaction) error
+	FetchAll(walletID string) ([]models.Transaction, error)
 }
 
 type transactionRepository struct {
@@ -31,6 +32,8 @@ func (t *transactionRepository) Deposit(transaction *models.Transaction) error {
 	var balance float64
 	sqlStmt := fmt.Sprintf("SELECT balance FROM wallet WHERE id = '%s'", transaction.WalletID)
 	rows, err := tx.Query(ctx, sqlStmt)
+	defer rows.Close()
+
 	if err != nil {
 		return err
 	}
@@ -74,9 +77,12 @@ func (t *transactionRepository) Withdraw(transaction *models.Transaction) error 
 	var balance float64
 	sqlStmt := fmt.Sprintf("SELECT balance FROM wallet WHERE id = '%s'", transaction.WalletID)
 	rows, err := tx.Query(ctx, sqlStmt)
+	defer rows.Close()
+
 	if err != nil {
 		return err
 	}
+
 	for rows.Next() {
 		rows.Scan(&balance)
 	}
@@ -108,4 +114,35 @@ func (t *transactionRepository) Withdraw(transaction *models.Transaction) error 
 	}
 
 	return nil
+}
+
+func (w *transactionRepository) FetchAll(walletID string) ([]models.Transaction, error) {
+	sqlStmt := `SELECT id, wallet_id, status, transacted_at, type, amount,
+	reference_id FROM transactions WHERE wallet_id = $1`
+
+	rows, err := w.db.Query(context.Background(), sqlStmt, walletID)
+	defer rows.Close()
+
+	if err != nil {
+		return []models.Transaction{}, err
+	}
+
+	transactions := []models.Transaction{}
+	for rows.Next() {
+		var transaction models.Transaction
+		err := rows.Scan(
+			&transaction.ID,
+			&transaction.WalletID,
+			&transaction.Status,
+			&transaction.TransactedAt,
+			&transaction.Type,
+			&transaction.Amount,
+			&transaction.ReferenceID,
+		)
+		if err != nil {
+			return []models.Transaction{}, err
+		}
+		transactions = append(transactions, transaction)
+	}
+	return transactions, nil
 }

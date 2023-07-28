@@ -67,16 +67,34 @@ func ParseWithdraw(userID string, transaction Transaction) map[string]interface{
 }
 
 func ParseTransaction(key, userID string, transaction Transaction) map[string]interface{} {
+	var by, at string
+	if key == "deposit" {
+		by = "deposited_by"
+		at = "deposited_at"
+	} else if key == "withdraw" {
+		by = "withdrawn_by"
+		at = "withdrawn_at"
+	} else {
+		at = "transacted_at"
+	}
+
 	transactionData := map[string]interface{}{
 		"id":           transaction.ID,
-		"deposited_by": userID,
+		by:             userID,
 		"status":       transaction.Status,
-		"deposited_at": transaction.TransactedAt.Format(timeFormat),
+		at:             transaction.TransactedAt.Format(timeFormat),
 		"amount":       transaction.Amount,
 		"reference_id": transaction.ReferenceID,
 	}
 	result := make(map[string]interface{})
-	result[key] = transactionData
+
+	if key == "" && userID == "" {
+		delete(transactionData, by)
+		transactionData["type"] = transaction.Type
+		return transactionData
+	} else {
+		result[key] = transactionData
+	}
 	return result
 }
 
